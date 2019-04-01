@@ -34,6 +34,4 @@ int main(int argc, char *argv[]) {
     liberta_matriz(&MAT);
     
 
-
-
 }

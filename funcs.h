@@ -1,8 +1,5 @@
-/*
- *  Function:
- *    read_file()
- *
- */
+#ifndef funcs
+#define funcs
 
 typedef struct _matriz {
     int linhas;
@@ -18,4 +15,6 @@ typedef struct _matriz {
 
  void aloca_matriz(Matriz *M);
 
- void liberta_matriz (Matriz *M); 
+ void liberta_matriz (Matriz *M);
+ 
+ #endif
