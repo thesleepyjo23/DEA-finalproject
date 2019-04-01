@@ -11,10 +11,12 @@ typedef struct _matriz {
     int **matriz;
 } Matriz;
 
- void le_problema(FILE *fp, Matriz *M);
+ int le_problema(FILE *fp, Matriz *M);
 
  void aloca_matriz(Matriz *M);
 
  void liberta_matriz (Matriz *M);
+
+ void preenche_matriz(FILE *fp, Matriz *M);
  
  #endif

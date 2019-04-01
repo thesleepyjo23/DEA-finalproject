@@ -3,15 +3,21 @@
 #include <math.h>
 #include "funcs.h"
 
- void le_problema(FILE *fp, Matriz *M){
+ int le_problema(FILE *fp, Matriz *M){
 
     int colunas;
     int linhas;
     int li, ci;
     int k;
+    int check;
     char var;
 
-    fscanf(fp, "%d %d %c %d %d %d", &colunas, &linhas, &var, &li, &ci, &k);
+    check = fscanf(fp, "%d %d %c %d %d %d", &linhas, &colunas, &var, &li, &ci, &k);
+
+    if(check!=6){
+
+        return 0;
+    }
 
     M->colunas=colunas;
     M->linhas=linhas;
@@ -21,6 +27,8 @@
     M->k=k;
 
     printf("\n\n%d %d %c %d %d %d", colunas, linhas, var, li, ci, k);
+
+    return 1;
  }
 
  void aloca_matriz(Matriz *M){
@@ -44,3 +52,30 @@ void liberta_matriz(Matriz *M){
 
     free(M->matriz);
 }
+
+void preenche_matriz(FILE *fp, Matriz *M){
+
+    int i, j;
+
+    for(i=0; i<M->linhas; i++){
+
+        for(j=0; j<M->colunas; j++){
+
+            fscanf(fp, "%d", &M->matriz[i][j]);
+            
+        }
+    }
+
+    for(i=0; i<M->linhas; i++){
+        printf("\n");
+        for(j=0; j<M->colunas; j++){
+
+            printf( "%d ", M->matriz[i][j]);
+            
+        }
+    }
+
+}
+
+
+

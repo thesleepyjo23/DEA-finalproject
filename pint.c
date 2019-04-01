@@ -25,13 +25,15 @@ int main(int argc, char *argv[]) {
         exit ( 1 );
     }
 
-    le_problema(fp, &MAT);
-
-    aloca_matriz(&MAT);
-
-    /*preenche_matriz();*/
-
-    liberta_matriz(&MAT);
     
+    while(le_problema(fp, &MAT)!=0){
+        
+        aloca_matriz(&MAT);
+
+        preenche_matriz(fp, &MAT);
+
+        liberta_matriz(&MAT);
+    }
+        
 
 }
