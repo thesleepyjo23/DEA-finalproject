@@ -1,7 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "funcs.h"
+
+ FILE* abre_ficheiro(int argc, char *argv){
+
+    FILE *fp;
+    int x=0;
+
+    if (argc != 2) {
+        fprintf(stderr, "Modo de utilização: ./<nomedoexecutavel> <nomedoficheiro.puz0>\n");
+        exit(1);
+    }
+
+    fp = fopen ( argv, "r" );
+    if ( fp == NULL ) {
+        fprintf ( stderr, "Erro ao abrir o ficheiro .puz0 '%s'\n", argv);
+        exit ( 1 );
+    }
+
+    x=strlen(argv);
+
+    printf("\n\n%d\n\n", x);
+
+    if( (argv[x-5]!='.') || (argv[x-4]!='p') || (argv[x-3]!='u') || (argv[x-2]!='z') || (argv[x-1]!='0') ){
+
+        fprintf(stderr, "Modo de utilização: ./<nomedoexecutavel> <nomedoficheiro.puz0>\n");
+        exit (2);
+    } 
+
+    return fp;
+
+ }
 
  int le_problema(FILE *fp, Matriz *M){
 
@@ -77,5 +108,22 @@ void preenche_matriz(FILE *fp, Matriz *M){
 
 }
 
+void funcionamento(Matriz *M){
+
+    switch(M->var) {
+      case 'A' :
+         /*fazer função a*/
+         break;
+      case 'B' :
+        /*fazer função b*/
+        break;
+      case 'C' :
+         /*fazer função c*/
+         break;
+      default :
+         printf("Invalid grade\n" );
+   }
+
+}
 
 

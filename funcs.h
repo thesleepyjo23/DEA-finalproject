@@ -11,6 +11,8 @@ typedef struct _matriz {
     int **matriz;
 } Matriz;
 
+ FILE* abre_ficheiro(int argc, char *argv);
+ 
  int le_problema(FILE *fp, Matriz *M);
 
  void aloca_matriz(Matriz *M);
@@ -19,4 +21,6 @@ typedef struct _matriz {
 
  void preenche_matriz(FILE *fp, Matriz *M);
  
+ void funcionamento(Matriz *M);
+
  #endif
