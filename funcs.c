@@ -6,6 +6,7 @@
 
 #define MAX 2147483647
 
+
  FILE* abre_ficheiro(int argc, char *argv){
 
     FILE *fp;
@@ -110,6 +111,50 @@ void preenche_matriz(FILE *fp, Matriz *M){
 
 }
 
+void var_a(Matriz *M){
+
+    static int movimentos[8][2] = {{-1,0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}};
+    int l;
+    int i, j;
+    int max;
+    int check=0;
+
+    max=M->matriz[M->li][M->ci];
+
+    /*casos fora do mapa*/
+    if( (M->li<0) || (M->li>M->linhas) || (M->ci<0) || (M->ci>M->colunas) ){
+
+        /*escrever -1*/
+        printf("\n\n-1\n\n");
+        return;
+    }
+
+    for (l=0; l<8; l++) {
+        i = M->li + movimentos[l][0];
+        j = M->ci + movimentos[l][1];
+        if (i < 0 || i >= M->linhas || j < 0 || j >= M->colunas) {
+          continue;
+        }
+            
+        if (M->matriz[i][j]>max){
+            max=M->matriz[i][j];
+            check++;
+        }
+            
+    }
+
+    if (check==0){
+
+        /*escrever -1*/
+        printf("\n\n-1\n\n");
+        return;
+    }
+
+    /*escrever 1 e o máximo*/
+    printf("\n\nvalor maximo:%d\n\n", max);
+
+
+}
 
 void var_b(Matriz *M){
 

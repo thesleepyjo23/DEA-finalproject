@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
 
         switch(MAT.var) {
             case 'A' :
-                /*fazer variável a*/
                 printf("\n\nfunção a\n\n");
+                var_a(&MAT);
             break;
             case 'B' :
                 printf("\n\nfunção b\n\n");
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
             /*escrever -1*/
             printf("\n\nmau comando\n\n");
         }
-        
+
         liberta_matriz(&MAT);
     }
         

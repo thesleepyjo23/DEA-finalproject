@@ -21,6 +21,8 @@ typedef struct _matriz {
 
  void preenche_matriz(FILE *fp, Matriz *M);
  
+void var_a(Matriz *M);
+
  void var_b(Matriz *M);
 
  #endif
