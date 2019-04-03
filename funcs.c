@@ -4,6 +4,8 @@
 #include <math.h>
 #include "funcs.h"
 
+#define MAX 2147483647
+
  FILE* abre_ficheiro(int argc, char *argv){
 
     FILE *fp;
@@ -57,7 +59,7 @@
     M->ci=ci;
     M->k=k;
 
-    printf("\n\n%d %d %c %d %d %d", colunas, linhas, var, li, ci, k);
+    printf("\n\n%d %d %c %d %d %d", linhas, colunas, var, li, ci, k);
 
     return 1;
  }
@@ -108,21 +110,50 @@ void preenche_matriz(FILE *fp, Matriz *M){
 
 }
 
-void funcionamento(Matriz *M){
 
-    switch(M->var) {
-      case 'A' :
-         /*fazer função a*/
-         break;
-      case 'B' :
-        /*fazer função b*/
-        break;
-      case 'C' :
-         /*fazer função c*/
-         break;
-      default :
-         printf("Invalid grade\n" );
-   }
+void var_b(Matriz *M){
+
+    static int movimentos[8][2] = {{-1,0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}};
+    int l;
+    int i, j;
+    int min=MAX;
+    int num_pares=0;
+
+    /*casos fora do mapa*/
+    if( (M->li<0) || (M->li>M->linhas) || (M->ci<0) || (M->ci>M->colunas) ){
+
+        /*escrever -1*/
+        printf("\n\n-1\n\n");
+        return;
+    }
+
+    for (l=0; l<8; l++) {
+        i = M->li + movimentos[l][0];
+        j = M->ci + movimentos[l][1];
+        if (i < 0 || i >= M->linhas || j < 0 || j >= M->colunas) {
+          continue;
+        }
+        
+        if ( (M->matriz[i][j]%2==0) )
+            num_pares++;
+
+            
+        if( (M->matriz[i][j]%2==0) && (M->matriz[i][j]<min) ){
+            min=M->matriz[i][j];
+        }
+            
+    }
+
+    if(num_pares==0){
+
+        /*escrever -1*/
+        printf("\n\n-1\n\n");
+        return;
+    }
+
+    /*escrever 1 e o mínimo*/
+    printf("\n\nnumeros pares:%d  valor minimo:%d\n\n", num_pares, min);
+    
 
 }
 

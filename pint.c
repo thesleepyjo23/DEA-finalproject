@@ -23,8 +23,24 @@ int main(int argc, char *argv[]) {
 
         preenche_matriz(fp, &MAT);
 
-        funcionamento(&MAT);
-
+        switch(MAT.var) {
+            case 'A' :
+                /*fazer variável a*/
+                printf("\n\nfunção a\n\n");
+            break;
+            case 'B' :
+                printf("\n\nfunção b\n\n");
+                var_b(&MAT);
+            break;
+            case 'C' :
+                /*fazer função c*/
+                printf("\n\nfunção c\n\n");
+            break;
+            default :
+            /*escrever -1*/
+            printf("\n\nmau comando\n\n");
+        }
+        
         liberta_matriz(&MAT);
     }
         
