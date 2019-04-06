@@ -9,8 +9,9 @@ typedef struct _matriz {
     int li;
     int ci;
     int k;
-    int **matriz;
+    int **mapa;
     int **caminho;
+    int **celulas;
 } Matriz;
 
 extern int movimentos[8][2];
@@ -19,17 +20,11 @@ extern int movimentos[8][2];
  
  int le_problema(FILE *fp, Matriz *M);
 
- void aloca_matriz(Matriz *M);
+ int **aloca_matriz(int **matriz, int linhas, int colunas);
 
- void aloca_caminho(Matriz *M);
+ int **preenche_matriz(FILE *fp, int **matriz, int linhas, int colunas);
 
- void preenche_matriz(FILE *fp, Matriz *M);
-
- void preenche_caminho(FILE *fp, Matriz *M);
-
- void liberta_matriz (Matriz *M);
-
- void liberta_caminho(Matriz *M);
+ int **liberta_matriz (int **matriz, int linhas, int colunas);
 
  int fora_do_mapa(int l, int c, int linhas, int colunas);
  
