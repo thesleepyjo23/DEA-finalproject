@@ -8,7 +8,7 @@ CFLAGS = -g -Wall -ansi -pedantic -lm
 
 walker: pint.o funcs.o 
 	$(CC) $(CFLAGS) -o walker pint.o funcs.o
-
+	
 pint: pint.c funcs.h
 	$(CC) -c $(CFLAGS) pint.c
 
@@ -20,13 +20,13 @@ t:  t1
 
 
 t1:
-	./walker test.puz0.puz0
+	./walker t3008.puz0
 
 clean::
 	rm -f .o core a.out walker~
 
 
-FILES = $(shell ls ../PROJ/*test.puz0)
+FILES = $(shell ls ../DEA-project-master/*t3008.puz0)
 
 VALG = valgrind --leak-check=full
 
