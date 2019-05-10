@@ -42,29 +42,23 @@ typedef struct _lista{
 
 extern int movimentos[8][2];
 
- FILE* abre_ficheiro(int argc, char *argv);
+FILE* abre_ficheiro(int argc, char *argv);
 
- int le_problema(FILE *fpIn, Matriz *M);
+int le_problema(FILE *fpIn, Matriz *M);
 
- int **aloca_matriz(int **matriz, int linhas, int colunas);
+int **aloca_matriz(int **matriz, int linhas, int colunas);
 
- int **preenche_matriz(FILE *fpIn, int **matriz, int linhas, int colunas);
+int **preenche_matriz(FILE *fpIn, int **matriz, int linhas, int colunas);
 
- int **preenche_mat_celulas(int **matriz, int linhas, int colunas);
+int **preenche_mat_celulas(int **matriz, int linhas, int colunas);
 
- int **liberta_matriz (int **matriz, int linhas, int colunas);
+int **liberta_matriz (int **matriz, int linhas, int colunas);
 
- int fora_do_mapa(int l, int c, int linhas, int colunas);
+int fora_do_mapa(int l, int c, int linhas, int colunas);
 
 char *Muda_extensao(const char *nome_ficheiro, const char *nova_extensao);
 
 void escreve_Ficheiro_Saida(FILE *fp, Matriz *M, Resultado *R);
-
-void var_a(Matriz *M, Resultado *R);
-
- void var_b(Matriz *M, Resultado *R);
-
-void var_c(Matriz *M,Resultado *R);
 
 node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int,int));
 

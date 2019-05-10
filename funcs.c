@@ -83,6 +83,18 @@ Usei calloc pq tava a dar erro no valgrind por alocar com malloc sem inicializar
  }
 
 
+/*função que verifica se as posições indicadas estão fora do mapa*/
+int fora_do_mapa(int l, int c, int linhas, int colunas){
+
+    /*se forem menores que 0 ou maiores (ou iguais, em c começamos em 0) que a dimensão da matriz estão claramente fora do mapa*/
+    if( (l<0) || (l>=linhas) || (c<0) || (c>=colunas) )
+        return 1;
+
+    else
+        return 0;
+
+}
+
 
  int le_problema(FILE *fpIn, Matriz *M){
 
@@ -113,6 +125,15 @@ Usei calloc pq tava a dar erro no valgrind por alocar com malloc sem inicializar
 
     /*APAGAR*/
     printf("\n\n%d %d %c %d %d %d", linhas, colunas, var, li, ci, k );
+
+    /*celula inicial está fora do mapa*/
+    if(fora_do_mapa(li,ci,linhas,colunas)==1)
+        return -1;
+
+    /*o caminho quando é relevante tem menos de 1 passo*/
+    if( (var=='A'||var=='B'||var=='C'||var=='D') && k<1 )
+        return -1;
+
 
     return 1;
  }
@@ -191,60 +212,49 @@ int **preenche_mat_celulas(int **matriz, int linhas, int colunas){
     return matriz;
 }
 
-/*função que verifica se as posições indicadas estão fora do mapa*/
-int fora_do_mapa(int l, int c, int linhas, int colunas){
-
-    /*se forem menores que 0 ou maiores (ou iguais, em c começamos em 0) que a dimensão da matriz estão claramente fora do mapa*/
-    if( (l<0) || (l>=linhas) || (c<0) || (c>=colunas) )
-        return 1;
-
-    else
-        return 0;
-
-}
-
 void escreve_Ficheiro_Saida(FILE *fp, Matriz *M, Resultado *R){
 
-int aux=0;
+    int aux=0;
 
-if (M->var == 'C') {
-  aux=1;
-}
+    if (M->var == 'C') {
+    aux=1;
+    }
 
-/*escreve ficheiro nas condiçoes de A ou B*/
-if((M->var == 'A'|| M->var == 'B') && aux==0){
+    /*escreve ficheiro nas condiçoes de A ou B*/
+    if((M->var == 'A'|| M->var == 'B') && aux==0){
 
-    if(R->resultado != -1){
+        if(R->resultado != -1){
 
-      fprintf(fp, "%d %d %c %d %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado, R->valor );
+        fprintf(fp, "%d %d %c %d %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado, R->valor );
+
+        }
+        else
+        {
+        fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado);
+
+        }
 
     }
-    else
+    /*escreve ficheiro nas condiçoes de C
+    Var C não passa nos testes, a rever*/
+    if (M->var == 'C' && aux==1) {
+        if(R->resultadoC!=4){
+
+            fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultadoC);
+        }
+    }
+
+    /*escreve ficheiro caso o problema esteja mal definido*/
+    /*Caso || (fora_do_mapa(M->li, M->ci, M->linhas,  M->colunas)==1)||(M->k<1) a ter em conta*/
+    if ((M->var != 'A' && M->var != 'B' && M->var != 'C'))
     {
-      fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado);
-
+        R->resultado=-1;
+        fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado);
     }
 
 }
-/*escreve ficheiro nas condiçoes de C
-Var C não passa nos testes, a rever*/
-if (M->var == 'C' && aux==1) {
- if(R->resultadoC!=4){
-
-    fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultadoC);
-  }
-}
-
-/*escreve ficheiro caso o problema esteja mal definido*/
-/*Caso || (fora_do_mapa(M->li, M->ci, M->linhas,  M->colunas)==1)||(M->k<1) a ter em conta*/
-if ((M->var != 'A' && M->var != 'B' && M->var != 'C'))
-  {
-    R->resultado=-1;
-    fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado);
-  }
 
 
-}
 /*Função create_node:
 
     Recebe a posição no mapa do nó a ser creado assim como o seu valor.
@@ -274,9 +284,10 @@ void print_list(node * list){
 
     node * aux = list;
 
-    if(list==NULL)
+    if(list==NULL){
+        printf("\n\n-1\n\n");
         return;
-
+    }
     else
         aux=aux->next;
     
@@ -320,6 +331,12 @@ int decrescente(Matriz * M, int x, int y, int nx, int ny){
     return (M->mapa[x][y] > M->mapa[nx][ny]);
 }
 
+/*Função Explore:
+    Insere no fim da lista um nó que satisfaz as condições da variante em causa.
+
+    Recebe como parâmetros a estrutura que define o problema - M, a posição do elemento a inserir
+
+*/
 node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int,int)){
 
     int nx, ny, l;
@@ -328,7 +345,7 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
     node *current_node = create_node(x,y,val);
     node *result;
 
-    /*o comprimento do caminho foi satisfeito*/
+    /*O comprimento do caminho foi satisfeito*/
     if (k == 0)
         return current_node;
  
@@ -337,19 +354,21 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
         nx = x + movimentos[l][0];
         ny = y + movimentos[l][1];
 
-
+        /*a célula resultante do movimento anterior está fora do mapa, repete-se o ciclo*/
         if (fora_do_mapa(nx, ny, M->linhas, M->colunas)==1)
             continue;
 
-        /*se a célula resultante do movimento anterior está fora do mapa, não satisfaz o critério ou já foi usada repete-se o ciclo*/
+        /*a célula resultante não satisfaz o critério ou já foi percorrida, repete-se o ciclo*/
         if (valido(M,x,y,nx,ny)==0 || M->celulas[nx][ny]==1)
             continue; 
 
-
-        M->celulas[nx][ny]=1;
-        /*a nova célula satisfaz os critérios anteriores e então a função é chamada recursivamente com a sua nova posição*/
+        /*a nova célula satisfaz os critérios anteriores e então a função é chamada
+        recursivamente com a sua nova posição, e a sua posição é dada como percorrida*/
+        M->celulas[nx][ny]=1;    
         result = explore(M,nx,ny,k-1, valido);
-        
+    
+        /*insere-se o nó no final da lista se este não for NULL, 
+        ou seja, se a célula é valida para ser adicionada ao caminho */
         if (result == NULL)
             continue;
         
@@ -358,6 +377,7 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
             return current_node;
         }
     }
+    /*não encontra nenhuma célula adjacente que satisfaz os requisitos da variante*/
     return NULL;
         
 }
@@ -372,332 +392,8 @@ void free_list(node *no){
         no=no->next;
         free(aux);
     }
+
     no=NULL;
+
     return;
-}
-
-/*função que realiza a variante A*/
-void var_a(Matriz *M, Resultado *R){
-
-    int l;
-    int i, j;
-    int max;  /*variável que vai conter o valor máximo*/
-    int check=0; /*variável que vai contar quantas células adjacentes possuem um valor maior que a célula inicial do problema*/
-    int cursor=0;
-    int buffer_cursor=0;
-    int buffer_x, buffer_y;
-    int buffer_max;
-    int x, y;
-    int k;
-
-    /*casos fora do mapa*/
-    if( fora_do_mapa(M->li, M->ci, M->linhas, M->colunas)==1  ){
-
-        /*escrever -1*/
-        printf("\n\n-1\n\n");
-        R->resultado=-1;
-        return;
-    }
-
-    for(i=0; i<M->linhas; i++){
-        for(j=0; j<M->colunas; j++)
-            M->celulas[i][j]=0;
-    }
-
-    /*o número máximo inicial é o da célula indicada pelo problema*/
-    max=M->mapa[M->li][M->ci];
-    x=M->li;
-    y=M->ci; 
-    k=M->k;
-
-
-    /*ciclo que vai percorrer as posições adjacentes e usar o valor das válidas*/
-    while(cursor < k){
-        buffer_cursor=cursor;
-        for (l=0; l<8; l++) {
-            /*são somados aos índices os movimentos possíveis a seres feitos*/
-            i = x + movimentos[l][0];
-            j = y + movimentos[l][1];
-            /*posições não válidas, ou seja, fora do mapa*/
-            if (fora_do_mapa(i, j, M->linhas, M->colunas)==1) {
-                R->resultado=-1;
-                continue;
-            }   
-            
-            /*se o número da célula actual for maior e esta ainda não tiver sido usada no caminho*/
-            if ( (M->mapa[i][j]>max) && (M->celulas[i][j]!=1)){
-                buffer_max=max;
-                max=M->mapa[i][j];
-                M->celulas[i][j]=1;
-                M->caminho[cursor][0]=i;
-                M->caminho[cursor][1]=j;
-                M->caminho[cursor][2]=max;
-                buffer_x=x;
-                buffer_y=y;
-                x=i;
-                y=j;
-                cursor++;
-                break;
-            }
-        }
-        /*não encontrou célula adjacente maior*/
-        if(buffer_cursor==cursor){
-            cursor--;
-            x=buffer_x;
-            y=buffer_y;
-            max=buffer_max;
-        }
-        /*não encontrou caminho de dimensão possível*/
-        if(cursor<0){
-            printf("\n\nvariante A não satisfeita\n\n");
-            break;
-        }
-
-    }
-
-    for(i=0; i<k; i++){
-      printf("\n");
-        for(j=0; j<3; j++){
-
-            printf("%d ", M->caminho[i][j]);
-
-        }
-
-    }
-    /*caso em que não é encontrada nenhuma célula com valor maior*/
-    if (check==0){
-
-        /*escrever -1*/
-        printf("\n\n-1\n\n");
-          R->resultado=-1;
-        return;
-    }
-
-    /*é escrito 1 e o valor máximo das células adjacentes*/
-    printf("\n\nvalor maximo:%d\n\n", max);
-      R->resultado=1;
-        R->valor=max;
-
-}
-
-
-/*função que realiza a variante B*/
-void var_b(Matriz *M, Resultado *R){
-
-
-    int l;
-    int i, j;
-    int min=MAX; /*número que vai conter o valor mínimo par, é inicializado com o maior inteiro possível em C*/
-    int num_pares=0;  /*variável que vai contar a quantidade de números pares adjacentes à célula inicial*/
-
-    /*casos fora do mapa*/
-    if( fora_do_mapa(M->li, M->ci, M->linhas, M->colunas)==1 ){
-
-        /*escrever -1*/
-        printf("\n\n-1\n\n");
-        R->resultado=-1;
-        return;
-    }
-
-    /*ciclo que vai percorrer as posições adjacentes e usar o valor das válidas*/
-    for (l=0; l<8; l++) {
-        i = M->li + movimentos[l][0];
-        j = M->ci + movimentos[l][1];
-        if (fora_do_mapa(i, j, M->linhas, M->colunas)==1) {
-          R->resultado=-1;
-          continue;
-        }
-
-        /*o número contido na célula adjacente é par*/
-        if ( (M->mapa[i][j]%2==0) )
-            num_pares++;
-
-        /*se o número for menor e par, este passa a ser o mínimo*/
-        if( (M->mapa[i][j]%2==0) && (M->mapa[i][j]<min) ){
-            min=M->mapa[i][j];
-        }
-
-    }
-
-    /*nenhuma célula adjacente é par*/
-    if(num_pares==0){
-
-        /*escrever -1*/
-        printf("\n\n-1\n\n");
-        R->resultado=-1;
-        return;
-    }
-
-    /*escrever 1 e o mínimo*/
-    printf("\n\nnumeros pares:%d  valor minimo:%d\n\n", num_pares, min);
-    R->resultado=1;
-      R->valor=min;
-
-
-
-}
-
-/*função que realiza a variante C*/
-void var_c(Matriz *M,Resultado *R){
-
-    int i, j;
-    int c1, l1, c2, l2;   /*variáveis que vão guardar os índices da posição actual do caminho e da próxima*/
-    int valor1, valor2;   /*variáveis que vão guardar os valores da posição actual do caminho e da próxima*/
-    int count=0;   /*variável que vai contar a quantidade de vezes que o número seguinte foi crescente*/
-    int num_pares=0;   /*variável que vai contar a quantidade de vezes que o número seguinte foi par*/
-
-
-
-    /*é alocada uma matriz com a dimensão no mapa cuja função vai ser verificar quais das células foram usadas no caminho*/
-    M->celulas=aloca_matriz(M->celulas, M->linhas, M->colunas);
-
-    /*inicializada a 0's*/
-    for(i=0; i<M->linhas; i++){
-        for(j=0; j<M->colunas; j++)
-            M->celulas[i][j]=0;
-    }
-
-    /*são guardados os valores e os índices das células */
-    l1=M->li;
-    c1=M->ci;
-    valor1=M->mapa[l1][c1];
-    l2=M->caminho[0][0];
-    c2=M->caminho[0][1];
-    valor2=M->caminho[0][2];
-
-    /*verificação que a célula inicial e a primeira do caminho não são a mesma*/
-    if( (l1=l2) && (c1=c2)){
-
-        M->celulas=liberta_matriz(M->celulas, M->linhas, M->colunas);
-            printf("\n\ncelula ja utilizada1 ");
-            R->resultadoC=4;
-            return;
-    }
-
-    /*as células já fizeram parte do caminho e como tal passam a ter o valor de 1*/
-    M->celulas[l1][c1]=1;
-    M->celulas[l2][c2]=1;
-
-
-    /*verifica se as células fazem parte do mapa*/
-    if( (fora_do_mapa(l1, c1, M->linhas, M->colunas)==1) || (fora_do_mapa(l2, c2, M->linhas, M->colunas)==1) ){
-
-        printf("\n\ncelulas indicadas para o caminho não estão no mapa!\n\n");
-        R->resultadoC=4;
-        return;
-    }
-
-
-    /*verifica se os movimentos são válidos*/
-    if( ( (c2-c1!=1) && (c2-c1)!=0 && (c2-c1)!=-1) || ( (l2-l1!=1) && (l2-l1)!=0 && (l2-l1)!=-1 ) ){
-
-        printf("caminho de movimentos inválidos");
-        R->resultadoC=4;
-        return;
-    }
-
-    /*verifica se o valor do mapa coincide com o valor no caminho*/
-    if(valor1 != M->mapa[l1][c1] || valor2 != M->mapa[l2][c2]){
-
-        printf("\n\nvalor indicado para a celula do caminho nao corresponde ao valor indicado na matriz");
-        R->resultadoC=4;
-        return;
-    }
-
-    /*a contagem de números pares aumenta*/
-    if(valor2%2==0)
-        num_pares++;
-
-    /*a contagem de números crescentes aumenta*/
-    if(valor2>valor1)
-        count++;
-
-
-    /*ciclo que vai percorrer a matriz do caminho e os seus valores*/
-    for(i=0; i<M->k-1; i++){
-
-        l1=M->caminho[i][0];
-        c1=M->caminho[i][1];
-        l2=M->caminho[i+1][0];
-        c2=M->caminho[i+1][1];
-        valor1=M->caminho[i][2];
-        valor2=M->caminho[i+1][2];
-
-
-        /*células indicadas para o caminho não estão no mapa */
-        if( (fora_do_mapa(l1, c1, M->linhas, M->colunas)==1) || (fora_do_mapa(l2, c2, M->linhas, M->colunas)==1) ){
-
-            printf("\n\ncelulas indicadas para o caminho não estão no mapa!\n\n");
-            R->resultadoC=4;
-            return;
-        }
-
-        /*valor indicado para a célula do caminho não corresponde ao valor indicado na matriz*/
-
-        if(valor1 != M->mapa[l1][c1] || valor2 != M->mapa[l2][c2]){
-
-            printf("\n\nvalor indicado para a celula do caminho nao corresponde ao valor indicado na matriz");
-            R->resultadoC=4;
-            return;
-        }
-
-        /*caminho de movimentos inválidos*/
-        if( ( (c2-c1!=1) && (c2-c1)!=0 && (c2-c1)!=-1) || ( (l2-l1!=1) && (l2-l1)!=0 && (l2-l1)!=-1 ) ){
-
-            printf("\n\ncaminho de movimentos inválidos");
-            R->resultadoC=4;
-            return;
-        }
-
-        /*a célula já tinha sido parte do caminho e como tal este é inválido*/
-        if(M->celulas[l2][c2]==1){
-
-            M->celulas=liberta_matriz(M->celulas, M->linhas, M->colunas);
-            printf("\n\ncelula ja utilizada ");
-            R->resultadoC=4;
-            return;
-        }
-
-        /*conta o número de vezes em que o valor seguinte do caminho é maior que o anterior*/
-        if(valor2>valor1)
-            count++;
-
-        /*aumenta o numero de pares*/
-        if(valor2%2==0)
-            num_pares++;
-
-        /*confirma que a célula já fez parte do caminho*/
-        M->celulas[l2][c2]=1;
-    }
-
-    /*caminho válido para ambos os formatos*/
-    if((count==M->k) && (num_pares==M->k)){
-        printf("\n\n caminho válido para ambos os formatos");
-        M->celulas=liberta_matriz(M->celulas, M->linhas, M->colunas);
-        R->resultadoC=3;
-        return;
-    }
-    else
-    /*caminho válido para números pares*/
-    if(num_pares==M->k){
-        printf("\n\ncaminho apenas com numeros pares\n\n");
-        M->celulas=liberta_matriz(M->celulas, M->linhas, M->colunas);
-        R->resultadoC=2;
-        return;
-    }
-    else
-    /*caminho válido para números estritamente crescentes*/
-    if(count==M->k){
-        printf("\n\ncaminho estritamente crescente\n\n");
-        M->celulas=liberta_matriz(M->celulas, M->linhas, M->colunas);
-        R->resultadoC=1;
-        return;
-    }
-    else{
-
-        printf("\n\n Caminho não tem números pares nem é estritamente crescente");
-        M->celulas=liberta_matriz(M->celulas, M->linhas, M->colunas);
-        R->resultadoC=-1;
-    }
-
 }
