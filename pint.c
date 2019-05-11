@@ -61,7 +61,32 @@ int main(int argc, char *argv[]) {
                 aux=0;
             break;
             case 'C' :
+                printf("\n\nFunção C(Problema:%d)\n\n",check);
+                /*alocar e preencher uma matriz para o mapa, com as suas dimensões lidas*/
+                MAT.mapa = aloca_matriz(MAT.mapa, MAT.linhas, MAT.colunas);
+                MAT.mapa = preenche_matriz(fpIn, MAT.mapa, MAT.linhas, MAT.colunas);
+                MAT.celulas = aloca_matriz(MAT.celulas, MAT.linhas, MAT.colunas);
+                MAT.celulas = preenche_mat_celulas(MAT.celulas, MAT.linhas, MAT.colunas);
+                MAT.li=0;
+                MAT.ci=0;
+                while(explore(&MAT, MAT.li, MAT.ci, MAT.k, crescente)==NULL){
 
+                    if(MAT.ci<MAT.colunas)
+                        MAT.ci++;
+                    else{
+                        MAT.ci=0;
+                        if(MAT.li<MAT.linhas)
+                            MAT.li++;
+                        else
+                            break;
+                        
+                    } 
+                    explore(&MAT, MAT.li, MAT.ci, MAT.k, crescente);
+                }           
+                print_list(explore(&MAT, MAT.li, MAT.ci, MAT.k, crescente));
+                free_list( explore(&MAT, MAT.li, MAT.ci, MAT.k, crescente));
+                MAT.mapa = liberta_matriz(MAT.mapa, MAT.linhas, MAT.colunas);
+                MAT.celulas = liberta_matriz(MAT.celulas, MAT.linhas, MAT.colunas);
             break;
             default :
                 /* Probelma mal definido*/

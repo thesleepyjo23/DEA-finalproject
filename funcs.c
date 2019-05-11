@@ -369,15 +369,17 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
     
         /*insere-se o nó no final da lista se este não for NULL, 
         ou seja, se a célula é valida para ser adicionada ao caminho */
-        if (result == NULL)
+        if (result == NULL){
+            printf("celula [%d][%d] = %d", nx, ny, M->celulas[nx][ny]);
             continue;
-        
+        }
         else{
             current_node->next=result;
             return current_node;
         }
     }
     /*não encontra nenhuma célula adjacente que satisfaz os requisitos da variante*/
+    M->celulas[x][y]=0;
     return NULL;
         
 }
