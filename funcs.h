@@ -1,6 +1,8 @@
 #ifndef funcs
 #define funcs
 #define Extensao_fpOut ".vrf"
+#define PAR 1
+#define CRESCENTE -1
 
 typedef struct LinkedListStruct node;
 
@@ -69,6 +71,8 @@ int crescente(Matriz * M, int x, int y, int nx, int ny);
 int decrescente(Matriz * M, int x, int y, int nx, int ny);
 
 void print_list(node * list);
+
+node* percorre_mapa (Matriz *MAT, node* caminho, int criterio);
 
 void free_list(node *no);
 

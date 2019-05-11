@@ -127,7 +127,7 @@ int fora_do_mapa(int l, int c, int linhas, int colunas){
     printf("\n\n%d %d %c %d %d %d", linhas, colunas, var, li, ci, k );
 
     /*celula inicial está fora do mapa*/
-    if(fora_do_mapa(li,ci,linhas,colunas)==1)
+    if( (var=='A'||var=='B') && fora_do_mapa(li,ci,linhas,colunas)==1)
         return -1;
 
     /*o caminho quando é relevante tem menos de 1 passo*/
@@ -292,7 +292,7 @@ void print_list(node * list){
         aux=aux->next;
     
     while (aux != NULL){
-        printf("\n%d,%d - %d\n", aux->x, aux->y, aux->val);
+        printf("\n%d,%d: %d\n", aux->x, aux->y, aux->val);
         aux=aux->next;
     }
     return;
@@ -369,10 +369,9 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
     
         /*insere-se o nó no final da lista se este não for NULL, 
         ou seja, se a célula é valida para ser adicionada ao caminho */
-        if (result == NULL){
-            printf("celula [%d][%d] = %d", nx, ny, M->celulas[nx][ny]);
+        if (result == NULL)     
             continue;
-        }
+        
         else{
             current_node->next=result;
             return current_node;
@@ -382,6 +381,35 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
     M->celulas[x][y]=0;
     return NULL;
         
+}
+
+node *percorre_mapa (Matriz *M, node *caminho, int criterio){
+
+    while(caminho==NULL){
+
+        if(M->ci < M->colunas-1){
+            M->ci++;
+        }
+        else{
+            if(M->li < M->linhas-1)
+                M->li++;
+            else
+                break;                      
+            M->ci=0;                       
+        } 
+        printf("\n%d %d", M->li, M->ci);
+
+        M->celulas = preenche_mat_celulas(M->celulas, M->linhas, M->colunas);
+        
+        if(criterio==CRESCENTE)        
+            caminho=explore(M, M->li, M->ci, M->k, crescente);
+        
+        if(criterio==PAR)
+            caminho=explore(M, M->li, M->ci, M->k, par);
+        
+    }
+    return caminho;
+
 }
 
 void free_list(node *no){
