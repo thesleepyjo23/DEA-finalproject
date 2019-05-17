@@ -1,8 +1,14 @@
-#ifndef funcs
-#define funcs
+#ifndef FUNCS_H
+#define FUNCS_H
+
+#include <stdint.h>
+
 #define Extensao_fpOut ".vrf"
 #define PAR 1
 #define CRESCENTE -1
+
+#define debug 1
+
 
 typedef struct LinkedListStruct node;
 
@@ -52,7 +58,7 @@ int **aloca_matriz(int **matriz, int linhas, int colunas);
 
 int **preenche_matriz(FILE *fpIn, int **matriz, int linhas, int colunas);
 
-int **preenche_mat_celulas(int **matriz, int linhas, int colunas);
+int **preenche_mat_zeros(int **matriz, int linhas, int colunas);
 
 int **liberta_matriz (int **matriz, int linhas, int colunas);
 
@@ -64,6 +70,12 @@ void escreve_Ficheiro_Saida(FILE *fp, Matriz *M, Resultado *R);
 
 node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int,int));
 
+node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max);
+
+int max_matriz(int **matriz, int *x, int *y);
+
+void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,int,int,int));
+
 int par(Matriz * M, int x, int y, int nx, int ny);
 
 int crescente(Matriz * M, int x, int y, int nx, int ny);
@@ -72,8 +84,10 @@ int decrescente(Matriz * M, int x, int y, int nx, int ny);
 
 void print_list(node * list);
 
-node* percorre_mapa (Matriz *MAT, node* caminho, int criterio);
+node* muda_partida (Matriz *MAT, node* caminho, int criterio);
 
 void free_list(node *no);
+
+void print_debug(const char *format, ...);
 
  #endif

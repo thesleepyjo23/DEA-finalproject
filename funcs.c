@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <math.h>
 #include "funcs.h"
 #define MAX 2147483647
@@ -124,7 +125,7 @@ int fora_do_mapa(int l, int c, int linhas, int colunas){
     M->k=k;
 
     /*APAGAR*/
-    printf("\n\n%d %d %c %d %d %d", linhas, colunas, var, li, ci, k );
+    print_debug("\n\n%d %d %c %d %d %d", linhas, colunas, var, li, ci, k );
 
     /*celula inicial está fora do mapa*/
     if( (var=='A'||var=='B') && fora_do_mapa(li,ci,linhas,colunas)==1)
@@ -168,20 +169,33 @@ int **preenche_matriz(FILE *fpIn, int **matriz, int linhas, int colunas){
     }
 /*APAGAR*/
     for(i=0; i<linhas; i++){
-      printf("\n");
+      print_debug("\n");
         for(j=0; j<colunas; j++){
 
-            printf("%d ", matriz[i][j]);
+            print_debug("%d ", matriz[i][j]);
 
         }
 
     }
-  printf("\n");
+  print_debug("\n");
 
     return matriz;
 
 }
 
+int **preenche_mat_zeros(int **matriz, int linhas, int colunas){
+
+    int i, j;
+
+    for (i=0; i<linhas; i++){
+
+        for(j=0; j<colunas; j++){
+            matriz[i][j]=0;
+        }
+    }
+
+    return matriz;
+}
 
 /*função que liberta a memória alocada anteriormente da matriz*/
  int **liberta_matriz (int **matriz, int linhas, int colunas){
@@ -198,19 +212,7 @@ int **preenche_matriz(FILE *fpIn, int **matriz, int linhas, int colunas){
 }
 
 
-int **preenche_mat_celulas(int **matriz, int linhas, int colunas){
 
-    int i, j;
-
-    for (i=0; i<linhas; i++){
-
-        for(j=0; j<colunas; j++){
-            matriz[i][j]=0;
-        }
-    }
-
-    return matriz;
-}
 
 void escreve_Ficheiro_Saida(FILE *fp, Matriz *M, Resultado *R){
 
@@ -285,7 +287,7 @@ void print_list(node * list){
     node * aux = list;
 
     if(list==NULL){
-        printf("\n\n-1\n\n");
+        print_debug("\n\ncaminho nulo:-1\n\n");
         return;
     }
     else
@@ -293,6 +295,7 @@ void print_list(node * list){
     
     while (aux != NULL){
         printf("\n%d,%d: %d\n", aux->x, aux->y, aux->val);
+        fflush(stdout);
         aux=aux->next;
     }
     return;
@@ -331,6 +334,52 @@ int decrescente(Matriz * M, int x, int y, int nx, int ny){
     return (M->mapa[x][y] > M->mapa[nx][ny]);
 }
 
+void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,int,int,int)){
+
+    int nx, ny, l;
+    unsigned int max_length = 1;
+
+    print_debug("Call node %d,%d\n", x, y);
+    
+
+    M->celulas[x][y]=1;
+    
+
+    if ((*lp)[x][y]!=0)
+        print_debug("\n\nERROR: calling explore_2 on an already visited node!!\n\n");
+
+    for (l=0; l<8; l++) {
+        /*movimento para uma célula adjacente de posição (nx, ny) */
+        nx = x + movimentos[l][0];
+        ny = y + movimentos[l][1];
+
+        /*a célula resultante do movimento anterior está fora do mapa, repete-se o ciclo*/
+        if (fora_do_mapa(nx, ny, M->linhas, M->colunas) == 1 || valido(M,x,y,nx,ny)==0 || M->celulas[nx][ny]==1)
+            continue;
+
+      
+    
+        if ((*lp)[nx][ny] == 0)
+            preenche_lp(lp, M, nx, ny, valido);
+        
+        if (max_length < (*lp)[nx][ny] + 1)
+            max_length = (*lp)[nx][ny] + 1;
+        
+
+    }
+
+    print_debug("Max length = %d\n", max_length);
+    fflush(stdout);
+    /*não encontra nenhuma célula adjacente que satisfaz os requisitos da variante*/
+    M->celulas[x][y]=0;
+
+    (*lp)[x][y] = max_length;
+    print_debug("\nreturn %d %d", x, y);
+    fflush(stdout);
+    return;        
+}
+
+
 /*Função Explore:
     Insere no fim da lista um nó que satisfaz as condições da variante em causa.
 
@@ -345,6 +394,8 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
     node *current_node = create_node(x,y,val);
     node *result;
 
+      M->celulas[x][y]=1; 
+
     /*O comprimento do caminho foi satisfeito*/
     if (k == 0)
         return current_node;
@@ -355,16 +406,12 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
         ny = y + movimentos[l][1];
 
         /*a célula resultante do movimento anterior está fora do mapa, repete-se o ciclo*/
-        if (fora_do_mapa(nx, ny, M->linhas, M->colunas)==1)
+        if (fora_do_mapa(nx, ny, M->linhas, M->colunas) == 1 || valido(M,x,y,nx,ny)==0 || M->celulas[nx][ny]==1)
             continue;
-
-        /*a célula resultante não satisfaz o critério ou já foi percorrida, repete-se o ciclo*/
-        if (valido(M,x,y,nx,ny)==0 || M->celulas[nx][ny]==1)
-            continue; 
 
         /*a nova célula satisfaz os critérios anteriores e então a função é chamada
         recursivamente com a sua nova posição, e a sua posição é dada como percorrida*/
-        M->celulas[nx][ny]=1;    
+         
         result = explore(M,nx,ny,k-1, valido);
     
         /*insere-se o nó no final da lista se este não for NULL, 
@@ -379,11 +426,71 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
     }
     /*não encontra nenhuma célula adjacente que satisfaz os requisitos da variante*/
     M->celulas[x][y]=0;
+    free(current_node);
     return NULL;
         
 }
 
-node *percorre_mapa (Matriz *M, node *caminho, int criterio){
+node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max){
+
+    int l, i, j, nx, ny;
+    int max=0;
+    int val=M->mapa[x][y];
+    node *current_node = create_node(x, y, val);
+    node *next_node;
+
+    M->celulas[x][y]=1;
+
+    if(lp[x][y]==1)
+        return current_node;
+
+    for(l=0; l<8; l++){
+
+        i = x + movimentos[l][0];
+        j = y + movimentos[l][1];
+        
+        if ( fora_do_mapa(i, j, M->linhas, M->colunas)==1 || M->celulas[i][j]==1 || lp[i][j]>=prev_max) 
+            continue;
+        
+        if (lp[i][j]>max){
+            max=lp[i][j];     
+            nx=i;
+            ny=j;
+          
+        }
+    }
+    
+    
+    next_node = longest_path(M, lp, nx, ny, max);
+
+    current_node->next=next_node;
+    return current_node;
+
+}
+
+int max_matriz(int **matriz, int *x, int *y){
+
+    int i, j;
+    int max=INT_MIN;
+    int linhas=*x, colunas=*y;
+
+    for (i=0; i<linhas; i++){
+
+        for(j=0;j<colunas; j++){
+
+            if(matriz[i][j]>max){
+                max=matriz[i][j];
+                *x=i;
+                *y=j;
+            }
+        }
+    }
+
+    return max;
+}
+
+
+node *muda_partida (Matriz *M, node *caminho, int criterio){
 
     while(caminho==NULL){
 
@@ -397,9 +504,9 @@ node *percorre_mapa (Matriz *M, node *caminho, int criterio){
                 break;                      
             M->ci=0;                       
         } 
-        printf("\n%d %d", M->li, M->ci);
+        print_debug("\n%d %d", M->li, M->ci);
 
-        M->celulas = preenche_mat_celulas(M->celulas, M->linhas, M->colunas);
+        M->celulas = preenche_mat_zeros(M->celulas, M->linhas, M->colunas);
         
         if(criterio==CRESCENTE)        
             caminho=explore(M, M->li, M->ci, M->k, crescente);
@@ -426,4 +533,11 @@ void free_list(node *no){
     no=NULL;
 
     return;
+}
+
+void print_debug(const char *format, ...){
+
+    if(debug)
+        printf(format);
+
 }
