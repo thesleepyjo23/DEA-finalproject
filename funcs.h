@@ -2,13 +2,10 @@
 #define FUNCS_H
 
 #include <stdint.h>
-
-#define Extensao_fpOut ".vrf"
+#include "matriz.h"
+#define Extensao_fpOut ".path"
 #define PAR 1
 #define CRESCENTE -1
-
-#define debug 1
-
 
 typedef struct LinkedListStruct node;
 
@@ -20,21 +17,7 @@ struct LinkedListStruct
     node *next;
 };
 
-
-typedef struct _matriz {
-    int linhas;
-    int colunas;
-    char var;
-    int li;
-    int ci;
-    int k;
-    int **mapa;
-    int **caminho;
-    int **celulas;
-} Matriz;
-
 typedef struct _resultado{
-  int resultadoC;
   int resultado;
   int valor;
 
@@ -52,42 +35,32 @@ extern int movimentos[8][2];
 
 FILE* abre_ficheiro(int argc, char *argv);
 
-int le_problema(FILE *fpIn, Matriz *M);
-
-int **aloca_matriz(int **matriz, int linhas, int colunas);
-
-int **preenche_matriz(FILE *fpIn, int **matriz, int linhas, int colunas);
-
-int **preenche_mat_zeros(int **matriz, int linhas, int colunas);
-
-int **liberta_matriz (int **matriz, int linhas, int colunas);
+int le_problema(FILE *fpIn,Matriz *M, Resultado *R);
 
 int fora_do_mapa(int l, int c, int linhas, int colunas);
 
 char *Muda_extensao(const char *nome_ficheiro, const char *nova_extensao);
 
-void escreve_Ficheiro_Saida(FILE *fp, Matriz *M, Resultado *R);
+void Ficheiro_Saida(FILE *fpO, Matriz *M, node * list,int k_real);
 
 node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int,int));
 
 node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max);
 
-int max_matriz(int **matriz, int *x, int *y);
-
 void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,int,int,int));
 
 int par(Matriz * M, int x, int y, int nx, int ny);
+
+int Atual_par(Matriz * M, int x, int y, int nx, int ny);
 
 int crescente(Matriz * M, int x, int y, int nx, int ny);
 
 int decrescente(Matriz * M, int x, int y, int nx, int ny);
 
-void print_list(node * list);
+int print_list(node * list, FILE *fpO,Resultado *R);
 
 node* muda_partida (Matriz *MAT, node* caminho, int criterio);
 
 void free_list(node *no);
-
-void print_debug(const char *format, ...);
 
  #endif

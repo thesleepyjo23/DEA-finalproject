@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <math.h>
 #include "funcs.h"
+#include "matriz.h"
 #define MAX 2147483647
 
 
@@ -32,24 +33,20 @@ int movimentos[8][2] = {{-1,0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 
 
     /*verifica se o utilizador está a executar o programa com 2 inputs*/
     if (argc != 2) {
-        fprintf(stderr, "Modo de utilização: ./<nomedoexecutavel> <nomedoficheiro.puz0>\n");
-        exit(1);
+        exit(0);
     }
 
     fpIn = fopen ( argv, "r" );
     if ( fpIn == NULL ) {
-        fprintf ( stderr, "Erro ao abrir o ficheiro .puz0 '%s'\n", argv);
-        exit (1);
+        exit (0);
     }
 
 
     /*verifica se o nome do ficheiro a ser aberto acaba em .puz0*/
     x=strlen(argv);
 
-    if( (argv[x-5]!='.') || (argv[x-4]!='p') || (argv[x-3]!='u') || (argv[x-2]!='z') || (argv[x-1]!='0') ){
-
-        fprintf(stderr, "Modo de utilização: ./<nomedoexecutavel> <nomedoficheiro.puz0>\n");
-        exit (2);
+    if( (argv[x-4]!='.') || (argv[x-3]!='p') || (argv[x-2]!='u') || (argv[x-1]!='z') ){
+        exit (0);
     }
 
     return fpIn;
@@ -83,6 +80,96 @@ Usei calloc pq tava a dar erro no valgrind por alocar com malloc sem inicializar
  	return novo_nome_ficheiro;
  }
 
+ void Ficheiro_Saida(FILE *fpO, Matriz *M, node * list, int k_real)
+
+ {
+   int check=0;
+
+   node * aux = list;
+
+
+   if( (M->var=='A'||M->var=='B') && fora_do_mapa(M->li,M->ci,M->linhas,M->colunas) == 1)
+   {
+     fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+     return;
+   }
+
+   /*o caminho quando é relevante tem menos de 1 passo*/
+   if( (M->var!='A' && M->var!='B' && M->var!='C' && M->var!='D' && M->var!='E' && M->var!='F') || M->k<1)
+   {
+
+     fprintf(fpO, "%d %d %c %d %d %d -1\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+     return;
+   }
+
+   if((M->var == 'A'|| M->var == 'B'||M->var=='C'||M->var=='D'))
+
+       {
+           /*print_list(list, fpO, R);*/
+           if (list == NULL) {
+             fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+             fprintf(fpO, "\n");
+             check =-1;
+            }
+
+           else
+           {
+               aux=aux->next;
+               check = 1;
+
+             }
+
+           if (check==1) {
+                 fprintf(fpO, "%d %d %c %d %d %d %d\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, M->k);
+                 while (aux != NULL){
+                     fprintf(fpO,"%d %d %d\n", aux->x, aux->y, aux->val);
+                     fflush(fpO);
+                     aux=aux->next;
+
+                   }
+                   fprintf(fpO, "\n");
+               }
+
+       }
+
+    if (M->var=='E'||M->var=='F') {
+        /*print_list(list, fpO, R);*/
+        if (list == NULL) {
+          fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+          fprintf(fpO, "\n");
+          check =-1;
+         }
+
+          else
+            {
+                if (aux->next==NULL) {
+                  fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+                }
+                else
+                {
+
+                  fprintf(fpO, "%d %d %c %d %d %d %d\n",M->linhas, M->colunas, M->var, aux->x,aux->y, M->k, k_real-1);
+                    aux=aux->next;
+                    check = 1;
+                }
+
+            }
+
+          if (check==1) {
+                while (aux != NULL){
+                    fprintf(fpO,"%d %d %d\n", aux->x, aux->y, aux->val);
+                    fflush(fpO);
+                    aux=aux->next;
+
+                  }
+                  fprintf(fpO, "\n");
+              }
+
+    }
+
+       return;
+ }
+
 
 /*função que verifica se as posições indicadas estão fora do mapa*/
 int fora_do_mapa(int l, int c, int linhas, int colunas){
@@ -97,7 +184,7 @@ int fora_do_mapa(int l, int c, int linhas, int colunas){
 }
 
 
- int le_problema(FILE *fpIn, Matriz *M){
+ int le_problema(FILE *fpIn, Matriz *M, Resultado *R){
 
     int colunas;
     int linhas;
@@ -105,6 +192,7 @@ int fora_do_mapa(int l, int c, int linhas, int colunas){
     int k;
     int check;
     char var;
+
 
     /*leitura dos 6 parametros que definem o problema*/
     check = fscanf(fpIn, "%d %d %c %d %d %d", &linhas, &colunas, &var, &li, &ci, &k);
@@ -124,138 +212,9 @@ int fora_do_mapa(int l, int c, int linhas, int colunas){
     M->ci=ci;
     M->k=k;
 
-    /*APAGAR*/
-    print_debug("\n\n%d %d %c %d %d %d", linhas, colunas, var, li, ci, k );
-
-    /*celula inicial está fora do mapa*/
-    if( (var=='A'||var=='B') && fora_do_mapa(li,ci,linhas,colunas)==1)
-        return -1;
-
-    /*o caminho quando é relevante tem menos de 1 passo*/
-    if( (var=='A'||var=='B'||var=='C'||var=='D') && k<1 )
-        return -1;
-
 
     return 1;
  }
-
-
-/*função que aloca memória para uma matriz de dimensão "linhas" x "colunas"*/
- int **aloca_matriz(int **matriz, int linhas, int colunas){
-
-    int i;
-
-    matriz = (int **) malloc( linhas*sizeof(int*) );
-
-    for(i=0; i<linhas; i++)
-        matriz[i]= (int*) malloc( colunas*sizeof(int));
-
-
-    return matriz;
- }
-
-/*função que preenche a matriz tendo em conta o que é lido no ficheiro*/
-int **preenche_matriz(FILE *fpIn, int **matriz, int linhas, int colunas){
-
-    int i, j;
-
-    for(i=0; i<linhas; i++){
-
-        for(j=0; j<colunas; j++){
-
-            fscanf(fpIn, "%d", &matriz[i][j]);
-
-        }
-    }
-/*APAGAR*/
-    for(i=0; i<linhas; i++){
-      print_debug("\n");
-        for(j=0; j<colunas; j++){
-
-            print_debug("%d ", matriz[i][j]);
-
-        }
-
-    }
-  print_debug("\n");
-
-    return matriz;
-
-}
-
-int **preenche_mat_zeros(int **matriz, int linhas, int colunas){
-
-    int i, j;
-
-    for (i=0; i<linhas; i++){
-
-        for(j=0; j<colunas; j++){
-            matriz[i][j]=0;
-        }
-    }
-
-    return matriz;
-}
-
-/*função que liberta a memória alocada anteriormente da matriz*/
- int **liberta_matriz (int **matriz, int linhas, int colunas){
-
-    int i;
-
-    for(i=0; i<linhas; i++)
-        free(matriz[i]);
-
-    free(matriz);
-
-    return matriz;
-
-}
-
-
-
-
-void escreve_Ficheiro_Saida(FILE *fp, Matriz *M, Resultado *R){
-
-    int aux=0;
-
-    if (M->var == 'C') {
-    aux=1;
-    }
-
-    /*escreve ficheiro nas condiçoes de A ou B*/
-    if((M->var == 'A'|| M->var == 'B') && aux==0){
-
-        if(R->resultado != -1){
-
-        fprintf(fp, "%d %d %c %d %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado, R->valor );
-
-        }
-        else
-        {
-        fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado);
-
-        }
-
-    }
-    /*escreve ficheiro nas condiçoes de C
-    Var C não passa nos testes, a rever*/
-    if (M->var == 'C' && aux==1) {
-        if(R->resultadoC!=4){
-
-            fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultadoC);
-        }
-    }
-
-    /*escreve ficheiro caso o problema esteja mal definido*/
-    /*Caso || (fora_do_mapa(M->li, M->ci, M->linhas,  M->colunas)==1)||(M->k<1) a ter em conta*/
-    if ((M->var != 'A' && M->var != 'B' && M->var != 'C'))
-    {
-        R->resultado=-1;
-        fprintf(fp, "%d %d %c %d %d %d %d\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, R->resultado);
-    }
-
-}
-
 
 /*Função create_node:
 
@@ -282,29 +241,9 @@ node * create_node(int x, int y, int val){
     return no;
 }
 
-void print_list(node * list){
-
-    node * aux = list;
-
-    if(list==NULL){
-        print_debug("\n\ncaminho nulo:-1\n\n");
-        return;
-    }
-    else
-        aux=aux->next;
-    
-    while (aux != NULL){
-        printf("\n%d,%d: %d\n", aux->x, aux->y, aux->val);
-        fflush(stdout);
-        aux=aux->next;
-    }
-    return;
-}
-
-
 /*Função par:
 
-    Recebe a estrutura que contêm os dados do problema bem como o mapa, 
+    Recebe a estrutura que contêm os dados do problema bem como o mapa,
 as posições da célula actual (irrelevantes para esta função) e a da próxima à qual nos vamos movimentar.
     Retorna 1 caso a próxima célula for par, 0 caso contrário (seja ímpar).
 
@@ -312,16 +251,26 @@ as posições da célula actual (irrelevantes para esta função) e a da próxim
 int par(Matriz * M, int x, int y, int nx, int ny){
     /*current position (x,y) is irrelevant*/
     if(M->mapa[nx][ny]%2==0)
-        return 1; 
+        return 1;
+
+    else
+        return 0;
+}
+
+int Atual_par(Matriz * M, int x, int y, int nx, int ny){
+    /*current position (x,y) is irrelevant*/
+    if((M->mapa[x][y]%2==0) && (M->mapa[nx][ny]%2==0))
+        return 1;
 
     else
         return 0;
 }
 
 
+
 /*Função crescente:
 
-    Recebe a estrutura que contêm os dados do problema bem como o mapa, 
+    Recebe a estrutura que contêm os dados do problema bem como o mapa,
 as posições da célula actual e a da próxima à qual nos vamos movimentar.
     Retorna 1 caso a próxima célula maior que a actual, 0 caso contrário (seja menor).
 
@@ -337,16 +286,11 @@ int decrescente(Matriz * M, int x, int y, int nx, int ny){
 void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,int,int,int)){
 
     int nx, ny, l;
-    unsigned int max_length = 1;
+    int max_length = 1;
 
-    print_debug("Call node %d,%d\n", x, y);
-    
+
 
     M->celulas[x][y]=1;
-    
-
-    if ((*lp)[x][y]!=0)
-        print_debug("\n\nERROR: calling explore_2 on an already visited node!!\n\n");
 
     for (l=0; l<8; l++) {
         /*movimento para uma célula adjacente de posição (nx, ny) */
@@ -357,26 +301,23 @@ void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,
         if (fora_do_mapa(nx, ny, M->linhas, M->colunas) == 1 || valido(M,x,y,nx,ny)==0 || M->celulas[nx][ny]==1)
             continue;
 
-      
-    
+
+
         if ((*lp)[nx][ny] == 0)
             preenche_lp(lp, M, nx, ny, valido);
-        
+
         if (max_length < (*lp)[nx][ny] + 1)
             max_length = (*lp)[nx][ny] + 1;
-        
+
 
     }
 
-    print_debug("Max length = %d\n", max_length);
-    fflush(stdout);
     /*não encontra nenhuma célula adjacente que satisfaz os requisitos da variante*/
     M->celulas[x][y]=0;
 
     (*lp)[x][y] = max_length;
-    print_debug("\nreturn %d %d", x, y);
-    fflush(stdout);
-    return;        
+
+    return;
 }
 
 
@@ -394,12 +335,12 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
     node *current_node = create_node(x,y,val);
     node *result;
 
-      M->celulas[x][y]=1; 
+      M->celulas[x][y]=1;
 
     /*O comprimento do caminho foi satisfeito*/
     if (k == 0)
         return current_node;
- 
+
     for (l=0; l<8; l++) {
         /*movimento para uma célula adjacente de posição (nx, ny) */
         nx = x + movimentos[l][0];
@@ -411,14 +352,14 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
 
         /*a nova célula satisfaz os critérios anteriores e então a função é chamada
         recursivamente com a sua nova posição, e a sua posição é dada como percorrida*/
-         
+
         result = explore(M,nx,ny,k-1, valido);
-    
-        /*insere-se o nó no final da lista se este não for NULL, 
+
+        /*insere-se o nó no final da lista se este não for NULL,
         ou seja, se a célula é valida para ser adicionada ao caminho */
-        if (result == NULL)     
+        if (result == NULL)
             continue;
-        
+
         else{
             current_node->next=result;
             return current_node;
@@ -428,12 +369,12 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
     M->celulas[x][y]=0;
     free(current_node);
     return NULL;
-        
+
 }
 
 node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max){
 
-    int l, i, j, nx, ny;
+    int l=0, i=0, j=0, nx=0, ny=0;
     int max=0;
     int val=M->mapa[x][y];
     node *current_node = create_node(x, y, val);
@@ -448,19 +389,19 @@ node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max){
 
         i = x + movimentos[l][0];
         j = y + movimentos[l][1];
-        
-        if ( fora_do_mapa(i, j, M->linhas, M->colunas)==1 || M->celulas[i][j]==1 || lp[i][j]>=prev_max) 
+
+        if ( fora_do_mapa(i, j, M->linhas, M->colunas)==1 || M->celulas[i][j]==1 || lp[i][j]>=prev_max)
             continue;
-        
+
         if (lp[i][j]>max){
-            max=lp[i][j];     
+            max=lp[i][j];
             nx=i;
             ny=j;
-          
+
         }
     }
-    
-    
+
+
     next_node = longest_path(M, lp, nx, ny, max);
 
     current_node->next=next_node;
@@ -468,26 +409,6 @@ node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max){
 
 }
 
-int max_matriz(int **matriz, int *x, int *y){
-
-    int i, j;
-    int max=INT_MIN;
-    int linhas=*x, colunas=*y;
-
-    for (i=0; i<linhas; i++){
-
-        for(j=0;j<colunas; j++){
-
-            if(matriz[i][j]>max){
-                max=matriz[i][j];
-                *x=i;
-                *y=j;
-            }
-        }
-    }
-
-    return max;
-}
 
 
 node *muda_partida (Matriz *M, node *caminho, int criterio){
@@ -501,19 +422,18 @@ node *muda_partida (Matriz *M, node *caminho, int criterio){
             if(M->li < M->linhas-1)
                 M->li++;
             else
-                break;                      
-            M->ci=0;                       
-        } 
-        print_debug("\n%d %d", M->li, M->ci);
+                break;
+            M->ci=0;
+        }
 
         M->celulas = preenche_mat_zeros(M->celulas, M->linhas, M->colunas);
-        
-        if(criterio==CRESCENTE)        
+
+        if(criterio==CRESCENTE)
             caminho=explore(M, M->li, M->ci, M->k, crescente);
-        
+
         if(criterio==PAR)
             caminho=explore(M, M->li, M->ci, M->k, par);
-        
+
     }
     return caminho;
 
@@ -524,20 +444,14 @@ void free_list(node *no){
     node *aux;
 
     while (no != NULL){
-        
+
         aux=no;
         no=no->next;
         free(aux);
     }
 
     no=NULL;
+    free(no);
 
     return;
-}
-
-void print_debug(const char *format, ...){
-
-    if(debug)
-        printf(format);
-
 }
