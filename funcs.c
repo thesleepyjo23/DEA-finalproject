@@ -5,7 +5,7 @@
 #include <math.h>
 #include "funcs.h"
 #include "matriz.h"
-#define MAX 2147483647
+
 
 /*variável global que contém os movimentos possíveis a serem feitos
 {-1,0}-N
@@ -19,11 +19,16 @@
 */
 int movimentos[8][2] = {{-1,0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}};
 
-/*função que abre os ficheiros*/
+/*Função abre_ficheiro:
+
+    Recebe os parâmetros int argc, char* argv.
+
+    Retorna o ponteiro do ficheiro a ser aberto.
+*/
  FILE* abre_ficheiro(int argc, char *argv){
 
-    FILE *fpIn;
-    int x=0;
+    FILE *fpIn;  /*ponteiro do ficheiro a ser aberto*/
+    int len=0;   /*comprimento do argumento do ficheiro a ser aberto*/
 
 
     /*verifica se o utilizador está a executar o programa com 2 inputs*/
@@ -32,145 +37,174 @@ int movimentos[8][2] = {{-1,0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 
     }
 
     fpIn = fopen ( argv, "r" );
+    /*verificação se o ficheiro é bem aberto*/
     if ( fpIn == NULL ) {
         exit (0);
     }
 
 
-    /*verifica se o nome do ficheiro a ser aberto acaba em .puz0*/
-    x=strlen(argv);
+    /*verifica se o nome do ficheiro a ser aberto acaba em .puz*/
+    len=strlen(argv);
 
-    if( (argv[x-4]!='.') || (argv[x-3]!='p') || (argv[x-2]!='u') || (argv[x-1]!='z') ){
+    if( (argv[len-4]!='.') || (argv[len-3]!='p') || (argv[len-2]!='u') || (argv[len-1]!='z') ){
         exit (0);
     }
 
     return fpIn;
 
  }
-/*Muda extensao do ficheiro de saída mantendo o nome do ficheiro de entrada
+/*Função Muda_extensão:
+
+
+
+
+Muda extensao do ficheiro de saída mantendo o nome do ficheiro de entrada
 nova extensao definida no funcs.h
-Usei calloc pq tava a dar erro no valgrind por alocar com malloc sem inicializar a 0.*/
+Usei calloc pq tava a dar erro no valgrind por alocar com malloc sem inicializar a 0.
+
+*/
  char *Muda_extensao(const char *nome_ficheiro,const char *nova_extensao) {
 
  	size_t tamanho_nome_ficheiro=0;
-  char *novo_nome_ficheiro = NULL;
-  char *extensao = NULL;
+    char *novo_nome_ficheiro = NULL;
+    char *extensao = NULL;
 
  	extensao = strrchr(nome_ficheiro, '.');
 
  	if(extensao == NULL) {
       return NULL;
-  }
+    }
 
  	tamanho_nome_ficheiro = strlen(nome_ficheiro) - strlen(extensao);
 
  	novo_nome_ficheiro = calloc(tamanho_nome_ficheiro+strlen(nova_extensao) + 1, sizeof(char));
-  if (novo_nome_ficheiro==NULL) {
-    exit(0);
-  }
-  strncpy(novo_nome_ficheiro, nome_ficheiro, tamanho_nome_ficheiro);
-  strcat(novo_nome_ficheiro, nova_extensao);
+    
+    if (novo_nome_ficheiro==NULL) {
+        exit(0);
+    }
+  
+    strncpy(novo_nome_ficheiro, nome_ficheiro, tamanho_nome_ficheiro);
+    strcat(novo_nome_ficheiro, nova_extensao);
 
 
  	return novo_nome_ficheiro;
  }
 
+
+/*  Função Ficheiro_Saida:
+
+(...)
+*/
  void Ficheiro_Saida(FILE *fpO, Matriz *M, node * list, int k_real)
-
  {
-   int check=0;
+    int check=0;
 
-   node * aux = list;
+    node * aux = list;
 
 
-   if( (M->var=='A'||M->var=='B') && fora_do_mapa(M->li,M->ci,M->linhas,M->colunas) == 1)
-   {
-     fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
-     return;
-   }
+    if( (M->var=='A'||M->var=='B') && fora_do_mapa(M->li,M->ci,M->linhas,M->colunas) == 1)
+    {
+        fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+        return;
+    }
 
    /*o caminho quando é relevante tem menos de 1 passo*/
-   if( (M->var!='A' && M->var!='B' && M->var!='C' && M->var!='D' && M->var!='E' && M->var!='F') || M->k<1)
-   {
+    if( (M->var!='A' && M->var!='B' && M->var!='C' && M->var!='D' && M->var!='E' && M->var!='F') || M->k<1)
+    {
 
-     fprintf(fpO, "%d %d %c %d %d %d -1\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
-     return;
-   }
+        fprintf(fpO, "%d %d %c %d %d %d -1\n\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+        return;
+    }
 
-   if((M->var == 'A'|| M->var == 'B'||M->var=='C'||M->var=='D'))
+    if((M->var == 'A'|| M->var == 'B'||M->var=='C'||M->var=='D'))
+    {
+        /*print_list(list, fpO, R);*/
+        if (list == NULL) {
+            fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+            fprintf(fpO, "\n");
+            check =-1;
+        }
 
-       {
-           /*print_list(list, fpO, R);*/
-           if (list == NULL) {
-             fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
-             fprintf(fpO, "\n");
-             check =-1;
+        else
+        {
+            aux=aux->next;
+            check = 1;
+
+        }
+
+        if (check==1) {
+            fprintf(fpO, "%d %d %c %d %d %d %d\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, M->k);
+            
+            while (aux != NULL){
+                
+                fprintf(fpO,"%d %d %d\n", aux->x, aux->y, aux->val);
+                fflush(fpO);
+                aux=aux->next;
+
             }
+            
+            fprintf(fpO, "\n");
+        }
 
-           else
-           {
-               aux=aux->next;
-               check = 1;
-
-             }
-
-           if (check==1) {
-                 fprintf(fpO, "%d %d %c %d %d %d %d\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k, M->k);
-                 while (aux != NULL){
-                     fprintf(fpO,"%d %d %d\n", aux->x, aux->y, aux->val);
-                     fflush(fpO);
-                     aux=aux->next;
-
-                   }
-                   fprintf(fpO, "\n");
-               }
-
-       }
+    }
 
     if (M->var=='E'||M->var=='F') {
         /*print_list(list, fpO, R);*/
         if (list == NULL) {
-          fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
-          fprintf(fpO, "\n");
-          check =-1;
-         }
+            fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+            fprintf(fpO, "\n");
+            check =-1;
+        }
 
-          else
+        else
+        {
+            if (aux->next==NULL) {
+                fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+                fprintf(fpO, "\n");
+            }
+            else
             {
-                if (aux->next==NULL) {
-                  fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
-                  fprintf(fpO, "\n");
+                if(M->var=='E'){
+                    fprintf(fpO, "%d %d %c %d %d %d %d\n",M->linhas, M->colunas, M->var, aux->x,aux->y, M->k, k_real-1);
+                    aux=aux->next;
+                    check = 1;
                 }
-                else
-                {
 
-                  fprintf(fpO, "%d %d %c %d %d %d %d\n",M->linhas, M->colunas, M->var, aux->x,aux->y, M->k, k_real-1);
+                if(M->var=='F'){
+                    fprintf(fpO, "%d %d %c %d %d %d %d\n",M->linhas, M->colunas, M->var, aux->x,aux->y, M->k, k_real);
                     aux=aux->next;
                     check = 1;
                 }
 
             }
 
-          if (check==1) {
-                while (aux != NULL){
-                    fprintf(fpO,"%d %d %d\n", aux->x, aux->y, aux->val);
-                    fflush(fpO);
-                    aux=aux->next;
+        }
 
-                  }
-                  fprintf(fpO, "\n");
-              }
+        if (check==1) {
+            while (aux != NULL){
+                fprintf(fpO,"%d %d %d\n", aux->x, aux->y, aux->val);
+                fflush(fpO);
+                aux=aux->next;
+
+                }
+            fprintf(fpO, "\n");
+        }
 
     }
 
-       return;
+    return;
  }
 
 
-/*função que verifica se as posições indicadas estão fora do mapa*/
+/* Função fora_do_mapa:
+
+    Recebe a posição (l,c) que se quer verificar se faz parte de um mapa linhas x colunas.
+
+    Retorna 1 se a posição está fora do mapa.
+*/
 int fora_do_mapa(int l, int c, int linhas, int colunas){
 
-    /*se forem menores que 0 ou maiores (ou iguais, em c começamos em 0) que a dimensão da matriz estão claramente fora do mapa*/
+    
     if( (l<0) || (l>=linhas) || (c<0) || (c>=colunas) )
         return 1;
 
@@ -179,7 +213,16 @@ int fora_do_mapa(int l, int c, int linhas, int colunas){
 
 }
 
+/*  Função le_problema:
 
+    Recebe:
+        - o ponteiro FILE* do ficheiro que foi aberto - fpIn;
+        - o ponteiro Matriz* da estrutura que guarda o mapa e o problema - M.
+
+    Retorna 1 se ainda existirem problemas a serem lidos, 0 caso contrário.
+        
+
+*/
  int le_problema(FILE *fpIn, Matriz *M, Resultado *R){
 
     int colunas;
