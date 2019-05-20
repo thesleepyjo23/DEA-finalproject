@@ -16,7 +16,6 @@ int main(int argc, char *argv[]) {
     Matriz MAT;
     Resultado RES;
     FILE *fpIn, *fpOut;
-
     char *nome_ficheiro_saida = NULL;
     int check=0;
     node *caminho = NULL;
@@ -25,6 +24,7 @@ int main(int argc, char *argv[]) {
     int x=0, y=0;
     int max=0;
     int aux1=0, aux2=0;
+
 
 
     fpIn = abre_ficheiro( argc, argv[1]);
@@ -90,9 +90,13 @@ int main(int argc, char *argv[]) {
                             lp=aloca_matriz(lp, MAT.linhas, MAT.colunas);
                             lp=preenche_mat_zeros(lp, MAT.linhas, MAT.colunas);
 
+                           
+
                             for(i=0; i<MAT.linhas; i++){
                                 for(j=0; j<MAT.colunas; j++){
-
+                                    
+                                    /*MAT.celulas = preenche_mat_zeros(MAT.celulas, MAT.linhas, MAT.colunas);
+*/
                                     if(lp[i][j]==0){
                                         if(MAT.var == 'E')
                                             preenche_lp(&lp, &MAT, i, j, crescente);
@@ -101,6 +105,8 @@ int main(int argc, char *argv[]) {
                                             preenche_lp(&lp, &MAT, i, j, Atual_par);
 
                                     }
+
+                                    
 
                                 }
                             }
@@ -121,7 +127,13 @@ int main(int argc, char *argv[]) {
 
                             max=max_matriz(lp, &x, &y);
 
-                            caminho = longest_path(&MAT, lp, x, y, max);
+                            if(MAT.var == 'E')
+                                caminho = longest_path(&MAT, lp, x, y, max, crescente);
+
+                            if(MAT.var == 'F')
+                                caminho = longest_path(&MAT, lp, x, y, max, Atual_par);
+
+                            
 
                             lp=liberta_matriz(lp, MAT.linhas, MAT.colunas);
 

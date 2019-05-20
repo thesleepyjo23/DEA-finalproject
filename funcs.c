@@ -7,11 +7,6 @@
 #include "matriz.h"
 #define MAX 2147483647
 
-
-
-
-
-
 /*variável global que contém os movimentos possíveis a serem feitos
 {-1,0}-N
 {-1, -1}-NO
@@ -144,6 +139,7 @@ Usei calloc pq tava a dar erro no valgrind por alocar com malloc sem inicializar
             {
                 if (aux->next==NULL) {
                   fprintf(fpO, "%d %d %c %d %d %d -1\n",M->linhas, M->colunas, M->var, M->li, M->ci, M->k);
+                  fprintf(fpO, "\n");
                 }
                 else
                 {
@@ -372,7 +368,7 @@ node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int
 
 }
 
-node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max){
+node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max, int (*valido)(Matriz*,int,int,int,int)){
 
     int l=0, i=0, j=0, nx=0, ny=0;
     int max=0;
@@ -390,7 +386,7 @@ node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max){
         i = x + movimentos[l][0];
         j = y + movimentos[l][1];
 
-        if ( fora_do_mapa(i, j, M->linhas, M->colunas)==1 || M->celulas[i][j]==1 || lp[i][j]>=prev_max)
+        if ( fora_do_mapa(i, j, M->linhas, M->colunas)==1 || M->celulas[i][j]==1 || lp[i][j]>=prev_max || valido(M,x,y,i,j)==0)
             continue;
 
         if (lp[i][j]>max){
@@ -402,7 +398,7 @@ node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max){
     }
 
 
-    next_node = longest_path(M, lp, nx, ny, max);
+    next_node = longest_path(M, lp, nx, ny, max, valido);
 
     current_node->next=next_node;
     return current_node;

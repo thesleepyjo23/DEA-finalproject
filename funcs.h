@@ -45,7 +45,7 @@ void Ficheiro_Saida(FILE *fpO, Matriz *M, node * list,int k_real);
 
 node *explore(Matriz * M, int x, int y, int k, int (*valido)(Matriz*,int,int,int,int));
 
-node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max);
+node *longest_path(Matriz * M, int **lp, int x, int y, int prev_max, int (*valido)(Matriz*,int,int,int,int));
 
 void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,int,int,int));
 
