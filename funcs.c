@@ -327,7 +327,8 @@ void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,
     int nx, ny, l;
     int max_length = 1;
 
-
+    printf("call preenche_lp: %d %d\n", x, y);
+    fflush(stdout);
 
     M->celulas[x][y]=1;
 
@@ -340,7 +341,7 @@ void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,
         if (fora_do_mapa(nx, ny, M->linhas, M->colunas) == 1 || valido(M,x,y,nx,ny)==0 || M->celulas[nx][ny]==1)
             continue;
 
-
+        
 
         if ((*lp)[nx][ny] == 0)
             preenche_lp(lp, M, nx, ny, valido);
@@ -348,6 +349,8 @@ void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,
         if (max_length < (*lp)[nx][ny] + 1)
             max_length = (*lp)[nx][ny] + 1;
 
+        printf("lp_neighbour[%d][%d] = %d\n", nx, ny, (*lp)[nx][ny]);
+        fflush(stdout);
 
     }
 
@@ -355,6 +358,9 @@ void preenche_lp(int ***lp, Matriz * M, int x, int y, int (*valido)(Matriz*,int,
     M->celulas[x][y]=0;
 
     (*lp)[x][y] = max_length;
+
+    printf("max length[%d][%d] = %d\n", x, y, max_length);
+    fflush(stdout);
 
     return;
 }

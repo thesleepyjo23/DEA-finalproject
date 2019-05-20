@@ -113,10 +113,13 @@ int main(int argc, char *argv[]) {
                             lp=aloca_matriz(lp, MAT.linhas, MAT.colunas);
                             lp=preenche_mat_zeros(lp, MAT.linhas, MAT.colunas);
 
+                            for(i=0;i<50;i++)
+                                printf("\n");
+
                             /*ciclo para percorrer todas as posições da matriz lp*/
                             for(i=0; i<MAT.linhas; i++){
                                 for(j=0; j<MAT.colunas; j++){
-
+                                    
                                     /*apenas faz sentido preencher a matriz se o valor 
                                     estiver por preencher, ou seja, igual a 0, e naturalmente
                                     esta é preenchida consoante o critério de 
